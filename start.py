@@ -1,9 +1,7 @@
 #
 # My Mario by Vasya & Papa (c) 2018
 #
-import sys
 import pygame
-import random
 import constants
 import pyganim
 
@@ -26,9 +24,13 @@ screen = pygame.display.set_mode([constants.screen_width, constants.screen_heigh
 
 # Загружаем спрайты
 sprite_sheet = SpriteSheet("super-mario-sprite.png")
+blocks_sheet = SpriteSheet("blocks2.png")
 
 if sprite_sheet is not None:
     print("load sprite sheet done!")
+
+if blocks_sheet is not None:
+    print("load blocks sheet done!")
 
 pygame.display.set_caption('Super Mario Bros By Vasya & Papa (c) 2018')
 
@@ -39,12 +41,21 @@ SPRITE_Y_SIZE = 64
 
 # Создаем массив из 21 спрайта
 image_array = []
-for i in range(0, 21):
+for i in range(0, 22):
     image_array.append(sprite_sheet.get_image(SPRITE_WIDTH * i, 0, SPRITE_X_SIZE, SPRITE_Y_SIZE))
+
+blocks_array = []
+for i in range(0, 22):
+    blocks_array.append(blocks_sheet.get_image(SPRITE_WIDTH * i, 0, SPRITE_X_SIZE, SPRITE_X_SIZE))
 
 # Загружаем "стоячие" спрайты
 right_standing = image_array[0]
 left_standing = pygame.transform.flip(right_standing, True, False)
+
+# Ground sprite
+ground_sprite = blocks_array[0]
+
+cloud_sprite = blocks_sheet.get_image(0, 2 * SPRITE_X_SIZE, 3 * SPRITE_X_SIZE, 2 * SPRITE_X_SIZE)
 
 # Подготовка спрайтов для PygAnimation
 animationObjects = {}
@@ -80,7 +91,7 @@ dt = 0
 x = 300
 y = 200
 
-WALKRATE = 6
+WALKRATE = 3
 JUMPRATE = 12
 
 jump = moveUp = moveDown = moveLeft = moveRight = False
@@ -95,7 +106,9 @@ instructionRect.bottomleft = (10, constants.screen_height - 10)
 while done == False:
 
     # Очистить экран
-    screen.fill(constants.white)
+    screen.fill(constants.skyblue)
+
+    screen.blit(cloud_sprite, (100, 100))
 
     # Цикл событий
     for event in pygame.event.get():
@@ -119,6 +132,14 @@ while done == False:
                 print("right")
                 moveRight = True
                 moveLeft = False
+            if event.key == pygame.K_UP:
+                print("up")
+                moveUp = True
+                moveDown = False
+            if event.key == pygame.K_DOWN:
+                print("down")
+                moveDown = True
+                moveUp = False
                 direction = RIGHT
 
         # Пользователь отпускает клавишу
@@ -127,6 +148,10 @@ while done == False:
                 moveLeft = False
             elif event.key == pygame.K_RIGHT:
                 moveRight = False
+            if event.key == pygame.K_UP:
+                moveUp = False
+            elif event.key == pygame.K_DOWN:
+                moveDown = False
 
     if moveUp or moveDown or moveLeft or moveRight:
         moveConductor.play() # calling play() while the animation objects are already playing is okay; in that case play() is a no-op
@@ -163,6 +188,11 @@ while done == False:
         y = 0
     if y > constants.screen_height - SPRITE_Y_SIZE:
         y = constants.screen_height - SPRITE_Y_SIZE
+
+    # Ground drawing
+    for i in range(0, 22):
+        screen.blit(ground_sprite, (i * 32, 368))
+        screen.blit(ground_sprite, (i * 32, 336))
 
     # Нарисуем инструкцию
     screen.blit(instructionSurf, instructionRect)

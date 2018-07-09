@@ -16,6 +16,8 @@ black    = (   0,   0,   0)
 white    = ( 255, 255, 255)
 red      = ( 255,   0,   0)
 
+skyblue  = ( 107, 140, 255)
+
 # Задать размер экрана
 screen_width = 700
 screen_height = 400
