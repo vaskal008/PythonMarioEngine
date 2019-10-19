@@ -1,0 +1,4 @@
+Developer plan:
+
+1. Sprite Collision
+2.

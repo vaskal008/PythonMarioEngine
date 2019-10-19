@@ -1,0 +1,6 @@
+Developer plan:
+
+1. Sprite Collision Detector
+2. Physics + Jumping
+3. Level storage
+4. Level scrolling

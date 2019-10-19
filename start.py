@@ -18,6 +18,21 @@ DOWN = 'down'
 LEFT = 'left'
 RIGHT = 'right'
 JUMP = 'jump'
+titleText = 'Super Mario Bros By Vasya & Papa (c) 2018'
+gravity = 1.35
+yVelocity = 0
+onGround = False
+
+def checkCollision(sprite1_rect, sprite2_rect):
+    result = False
+
+    if sprite1_rect.x < sprite2_rect.x + sprite2_rect.sizeX and \
+       sprite1_rect.x + sprite1_rect.sizeX > sprite2_rect.x and \
+       sprite1_rect.y < sprite2_rect.y + sprite2_rect.sizeY and \
+       sprite1_rect.y + sprite1_rect.sizeY > sprite2_rect.y:
+        result = True
+
+    return result
 
 # Объявим размер окна
 screen = pygame.display.set_mode([constants.screen_width, constants.screen_height])
@@ -32,7 +47,7 @@ if sprite_sheet is not None:
 if blocks_sheet is not None:
     print("load blocks sheet done!")
 
-pygame.display.set_caption('Super Mario Bros By Vasya & Papa (c) 2018')
+pygame.display.set_caption(titleText)
 
 # Размеры спрайта по X и Y
 SPRITE_WIDTH = 32
@@ -56,6 +71,42 @@ left_standing = pygame.transform.flip(right_standing, True, False)
 ground_sprite = blocks_array[0]
 
 cloud_sprite = blocks_sheet.get_image(0, 2 * SPRITE_X_SIZE, 3 * SPRITE_X_SIZE, 2 * SPRITE_X_SIZE)
+
+class cloud_sprite_rect(object):
+    sizeX = 3 * SPRITE_X_SIZE
+    sizeY = 2 * SPRITE_X_SIZE
+    x = 0
+    y = 0
+
+    def __init__(self, SPRITE_X_SIZE, SPRITE_Y_SIZE, x, y):
+        self.sizeX = 3 * SPRITE_X_SIZE
+        self.sizeY = 2 * SPRITE_X_SIZE
+        self.x = x
+        self.y = y
+
+class character_sprite_rect(object):
+    sizeX = SPRITE_X_SIZE
+    sizeY = SPRITE_Y_SIZE
+    x = 0
+    y = 0
+
+    def __init__(self, SPRITE_X_SIZE, SPRITE_Y_SIZE, x, y):
+        self.sizeX = SPRITE_X_SIZE
+        self.sizeY = SPRITE_Y_SIZE
+        self.x = x
+        self.y = y
+
+class ground_sprite_rect(object):
+    sizeX = SPRITE_X_SIZE
+    sizeY = SPRITE_X_SIZE
+    x = 0
+    y = 0
+
+    def __init__(self, SPRITE_X_SIZE, SPRITE_Y_SIZE, x, y):
+        self.sizeX = SPRITE_X_SIZE
+        self.sizeY = SPRITE_X_SIZE
+        self.x = x
+        self.y = y
 
 # Подготовка спрайтов для PygAnimation
 animationObjects = {}
@@ -92,9 +143,9 @@ x = 300
 y = 200
 
 WALKRATE = 3
-JUMPRATE = 12
+JUMPRATE = 3
 
-jump = moveUp = moveDown = moveLeft = moveRight = False
+jump = moveUp = moveDown = moveLeft = moveRight = moveJump = False
 
 # Подготовка текстовой инструкции
 BASICFONT = pygame.font.Font('freesansbold.ttf', 16)
@@ -108,7 +159,11 @@ while done == False:
     # Очистить экран
     screen.fill(constants.skyblue)
 
-    screen.blit(cloud_sprite, (100, 100))
+    cloudX = 100
+    cloudY = 100
+    screen.blit(cloud_sprite, (cloudX, cloudY))
+
+    cloud = cloud_sprite_rect(SPRITE_X_SIZE, SPRITE_Y_SIZE, cloudX, cloudY)
 
     # Цикл событий
     for event in pygame.event.get():
@@ -116,6 +171,8 @@ while done == False:
         if event.type == pygame.QUIT:
             done = True  # Для выхода программы (из основного цикла)
             print("Exit")
+
+        yVelocity += gravity
 
         # Пользователь нажимает на клавишу
         if event.type == pygame.KEYDOWN:
@@ -141,6 +198,9 @@ while done == False:
                 print("down")
                 moveDown = True
                 moveUp = False
+            if event.key == pygame.K_SPACE:
+                print("space")
+                moveJump = True
 
         # Пользователь отпускает клавишу
         elif event.type == pygame.KEYUP:
@@ -152,8 +212,10 @@ while done == False:
                 moveUp = False
             elif event.key == pygame.K_DOWN:
                 moveDown = False
+            # if event.key == pygame.K_SPACE:
+            #     moveJump = False
 
-    if moveUp or moveDown or moveLeft or moveRight:
+    if moveUp or moveDown or moveLeft or moveRight or moveJump:
         moveConductor.play() # calling play() while the animation objects are already playing is okay; in that case play() is a no-op
         if direction == LEFT:
             animationObjects['left_walk'].blit(screen, (x, y))
@@ -170,6 +232,21 @@ while done == False:
             x -= rate
         if moveRight:
             x += rate
+        if moveJump:
+            yVelocity -= JUMPRATE
+            moveJump = False
+
+        # Test collision detection
+        char = character_sprite_rect(SPRITE_X_SIZE, SPRITE_Y_SIZE, x, y)
+        if checkCollision(cloud, char):
+            if moveUp:
+                y += rate
+            if moveDown:
+                y -= rate
+            if moveLeft:
+                x += rate
+            if moveRight:
+                x -= rate
 
     else:
         # "Стоячие" спрайты
@@ -186,8 +263,13 @@ while done == False:
         x = constants.screen_width - SPRITE_X_SIZE
     if y < 0:
         y = 0
-    if y > constants.screen_height - SPRITE_Y_SIZE:
-        y = constants.screen_height - SPRITE_Y_SIZE
+    if y > constants.screen_height - SPRITE_Y_SIZE * 2:
+        y = constants.screen_height - SPRITE_Y_SIZE * 2
+        yVelocity = 0
+        onGround = True
+    else:
+        y += yVelocity
+        onGround = False
 
     # Ground drawing
     for i in range(0, 22):
