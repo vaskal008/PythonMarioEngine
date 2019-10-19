@@ -5,7 +5,6 @@ import pygame
 import constants
 import pyganim
 
-# Sprite
 from sprite_helper import SpriteSheet
 
 # from player import Player
