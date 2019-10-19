@@ -130,8 +130,9 @@ while done == False:
                 direction = LEFT
             if event.key == pygame.K_RIGHT:
                 print("right")
-                moveRight = True
                 moveLeft = False
+                moveRight = True
+                direction = RIGHT
             if event.key == pygame.K_UP:
                 print("up")
                 moveUp = True
@@ -140,7 +141,6 @@ while done == False:
                 print("down")
                 moveDown = True
                 moveUp = False
-                direction = RIGHT
 
         # Пользователь отпускает клавишу
         elif event.type == pygame.KEYUP:
